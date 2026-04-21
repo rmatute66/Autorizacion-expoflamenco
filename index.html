@@ -114,18 +114,18 @@
                 // 2. Inyectar textos en la Página 1
                 // Eje X: Izquierda(0) a Derecha(595). Eje Y: Abajo(0) a Arriba(842).
                 // Se han bajado los valores Y respecto a la versión anterior.
-                page1.drawText(nombreTutor, { x: 100, y: 665, size: 11 }); 
-                page1.drawText(dniTutor, { x: 130, y: 642, size: 11 });    
-                page1.drawText(nombreMenor, { x: 200, y: 597, size: 11 }); 
+                page1.drawText(nombreTutor, { x: 100, y: 650, size: 11 }); 
+                page1.drawText(dniTutor, { x: 130, y: 627, size: 11 });    
+                page1.drawText(nombreMenor, { x: 200, y: 582, size: 11 }); 
 
                 // 3. Inyectar datos en la Página 2 (Fecha, Lugar, Nombre repetido)
                 // Ajustado al texto "Y para que así conste, se firma en [Arahal] a [dia] de [mes] de 2026"
-                page2.drawText("Arahal", { x: 230, y: 560, size: 11 }); 
-                page2.drawText(dia, { x: 300, y: 560, size: 11 }); 
-                page2.drawText(mes, { x: 350, y: 560, size: 11 }); 
+                page2.drawText("Arahal", { x: 250, y: 600, size: 11 }); 
+                page2.drawText(dia, { x: 360, y: 600, size: 11 }); 
+                page2.drawText(mes, { x: 460, y: 600, size: 11 }); 
 
                 // Nombre del tutor al final (debajo de la zona de firma)
-                page2.drawText(nombreTutor, { x: 150, y: 350, size: 11 });
+                page2.drawText(nombreTutor, { x: 185, y: 350, size: 11 });
 
                 // 4. Inyectar la firma del tutor
                 const signatureImageBytes = signaturePad.toDataURL('image/png');
