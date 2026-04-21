@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Autorización Peña Flamenca</title>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; color: #333; }
+        h2 { font-size: 1.4rem; color: #222; margin-bottom: 10px; }
+        p.subtitle { font-size: 0.9rem; color: #666; margin-top: 0; }
+        
+        /* Caja del texto legal */
+        .legal-box { height: 200px; overflow-y: scroll; background: #f5f5f5; border: 1px solid #ddd; padding: 15px; border-radius: 5px; font-size: 0.85rem; line-height: 1.4; margin-bottom: 20px; }
+        
+        label { display: block; margin-top: 15px; font-weight: bold; font-size: 0.9rem; }
+        input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
+        
+        .checkbox-container { display: flex; align-items: center; margin-top: 20px; font-size: 0.9rem; font-weight: bold; }
+        .checkbox-container input { margin-right: 10px; width: 20px; height: 20px; }
+        
+        .canvas-container { border: 2px dashed #aaa; border-radius: 5px; margin-top: 10px; background: #fff; }
+        canvas { width: 100%; height: 200px; display: block; touch-action: none; }
+        
+        .btn { width: 100%; padding: 15px; margin-top: 20px; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .btn-primary { background-color: #0056b3; color: white; }
+        .btn-clear { background-color: #e0e0e0; color: #333; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <h2>Autorización ExpoFlamenco</h2>
+    <p class="subtitle">Por favor, lee el documento y rellena tus datos para generar el PDF firmado.</p>
+    
+    <div class="legal-box">
+        <strong>AUTORIZACIÓN BÁSICA PARA USO DE IMAGEN Y VOZ</strong><br><br>
+        Se autoriza a ExpoFlamenco S.L. al uso de la imagen y voz del menor, captadas con motivo de la presentación del Grupo Joven de la Peña Cultural Flamenca Pastora Pavón "Niña de los Peines" de Arahal (9 de abril de 2026) y la grabación realizada el 16 de abril de 2026.<br><br>
+        <strong>Finalidad:</strong> Grabación, edición y difusión en canales propios (web, redes sociales, vídeos) con fines informativos y promocionales.<br><br>
+        <strong>Límites:</strong> Uso respetuoso sin menoscabo del honor o intimidad. Carácter gratuito.<br><br>
+        <strong>Revocación:</strong> Podrá ser revocada por escrito en cualquier momento sin efectos retroactivos.
+    </div>
+
+    <div class="checkbox-container">
+        <input type="checkbox" id="aceptoTerminos">
+        <label for="aceptoTerminos" style="margin-top: 0;">He leído y entiendo el documento de autorización</label>
+    </div>
+    
+    <label for="nombreTutor">Nombre del padre, madre o tutor/a:</label>
+    <input type="text" id="nombreTutor" placeholder="Ej. María García">
+
+    <label for="dniTutor">DNI / NIE:</label>
+    <input type="text" id="dniTutor" placeholder="Ej. 12345678A">
+
+    <label for="nombreMenor">Nombre del menor:</label>
+    <input type="text" id="nombreMenor" placeholder="Ej. Carlos Pérez">
+
+    <label>Firma del tutor/a:</label>
+    <div class="canvas-container">
+        <canvas id="signature-pad"></canvas>
+    </div>
+    <button class="btn btn-clear" id="clear">Borrar firma</button>
+
+    <button class="btn btn-primary" id="generatePDF">Generar PDF Firmado</button>
+
+    <script>
+        const canvas = document.getElementById('signature-pad');
+        function resizeCanvas() {
+            const ratio =  Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext("2d").scale(ratio, ratio);
+        }
+        window.onresize = resizeCanvas;
+        resizeCanvas();
+        const signaturePad = new SignaturePad(canvas);
+
+        document.getElementById('clear').addEventListener('click', () => {
+            signaturePad.clear();
+        });
+
+        document.getElementById('generatePDF').addEventListener('click', async () => {
+            
+            if (!document.getElementById('aceptoTerminos').checked) {
+                alert("Debes marcar la casilla confirmando que has leído el documento.");
+                return;
+            }
+
+            if (signaturePad.isEmpty()) {
+                alert("Por favor, firme el documento en el recuadro antes de generar el PDF.");
+                return;
+            }
+
+            const nombreTutor = document.getElementById('nombreTutor').value;
+            const dniTutor = document.getElementById('dniTutor').value;
+            const nombreMenor = document.getElementById('nombreMenor').value;
+            
+            // Generar partes de la fecha
+            const fechaActual = new Date();
+            const dia = fechaActual.getDate().toString();
+            const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+            const mes = meses[fechaActual.getMonth()];
+
+            try {
+                // 1. Cargar el PDF base original
+                const urlPdf = 'autorizacion_base.pdf'; 
+                const existingPdfBytes = await fetch(urlPdf).then(res => res.arrayBuffer());
+                const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+                
+                const pages = pdfDoc.getPages();
+                const page1 = pages[0];
+                const page2 = pages[1];
+
+                // 2. Inyectar textos en la Página 1
+                // Eje X: Izquierda(0) a Derecha(595). Eje Y: Abajo(0) a Arriba(842).
+                // Se han bajado los valores Y respecto a la versión anterior.
+                page1.drawText(nombreTutor, { x: 100, y: 665, size: 11 }); 
+                page1.drawText(dniTutor, { x: 130, y: 642, size: 11 });    
+                page1.drawText(nombreMenor, { x: 200, y: 597, size: 11 }); 
+
+                // 3. Inyectar datos en la Página 2 (Fecha, Lugar, Nombre repetido)
+                // Ajustado al texto "Y para que así conste, se firma en [Arahal] a [dia] de [mes] de 2026"
+                page2.drawText("Arahal", { x: 230, y: 560, size: 11 }); 
+                page2.drawText(dia, { x: 300, y: 560, size: 11 }); 
+                page2.drawText(mes, { x: 350, y: 560, size: 11 }); 
+
+                // Nombre del tutor al final (debajo de la zona de firma)
+                page2.drawText(nombreTutor, { x: 150, y: 350, size: 11 });
+
+                // 4. Inyectar la firma del tutor
+                const signatureImageBytes = signaturePad.toDataURL('image/png');
+                const signatureImage = await pdfDoc.embedPng(signatureImageBytes);
+                
+                // Se dibuja la firma justo encima del nombre del tutor
+                page2.drawImage(signatureImage, {
+                    x: 60,
+                    y: 380,
+                    width: 150,
+                    height: 75,
+                });
+
+                // 5. Serializar y forzar descarga
+                const pdfBytes = await pdfDoc.save();
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `Autorizacion_${nombreMenor.replace(/\s+/g, '_')}.pdf`;
+                link.click();
+
+            } catch (error) {
+                console.error("Error generando el PDF: ", error);
+                alert("Hubo un error al generar el documento. Verifica si autorizacion_base.pdf está en la carpeta correcta.");
+            }
+        });
+    </script>
+</body>
+</html>
